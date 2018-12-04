@@ -15,7 +15,6 @@
       ['Listen', 'Bandcamp', 'b', 'https://bandcamp.com', '/search?q={}', '#408294'],
       ['Watch', 'Netflix', 'n', 'https://www.netflix.com/browse', '/search?q={}', '#e50914'],
       ['Watch', 'Plex', 'p', 'https://app.plex.tv/web/app', false, '#323232'],
-      ['Watch', 'Twitch', 'T', 'https://www.twitch.tv/directory/following', null, '#6441a5'],
       ['Watch', 'YouTube', 'y', 'https://youtube.com/feed/subscriptions', '/results?search_query={}', '#cd201f'],
       ['Download', 'Sky Torrents', 'S', 'https://skytorrents.in', '/search/all/ed/1?q={}', '#00d1b2'],
       ['Download', 'Pirate Bay', 'b', 'https://thepiratebay.org', '/search/{}', '#4c4132'],
@@ -26,24 +25,22 @@
     suggestions: true,
 
     // max amount of suggestions that will ever be displayed
-    suggestionsLimit: 5,
+    suggestionsLimit: 4,
 
     // the order and limit for each suggestion influencer
     // "Default" suggestions come from CONFIG.defaultSuggestions
     // "DuckDuckGo" suggestions come from the duck duck go search api
     // "History" suggestions come from your previously entered queries
     influencers: [
-      { name: 'Default', limit: 5 },
-      { name: 'History', limit: 2 },
-      { name: 'DuckDuckGo', limit: 5 },
+      { name: 'Default', limit: 4 },
+      { name: 'History', limit: 1 },
+      { name: 'DuckDuckGo', limit: 4 },
     ],
 
     // default search suggestions for the specified queries
     defaultSuggestions: {
-      'g': ['g/issues', 'g/pulls', 'gist.github.com', 'g/cadejscroggins', 'g/cadejscroggins/tilde'],
-      'l': ['l:electronic', 'l:chill', 'l:focus', 'l:sleep', 'l:ambient'],
-      'r': ['r/r/unixporn', 'r/r/startpages', 'r/r/webdev', 'r/r/technology', 'r/r/portland'],
-      's': ['s/you/likes', 's/discover/the-upload'],
+      'g': ['g/issues', 'g/pulls', 'gist.github.com'],
+      'r': ['r/r/unixporn', 'r/r/startpages', 'r/r/webdev', 'r/r/technology'],
     },
 
     // instantly redirect when a key is matched
@@ -54,7 +51,11 @@
     newTab: true,
 
     // dynamic background colors when command domains are matched
-    colors: true,
+    colors: false,
+
+    // specify a theme file
+    // remove or set to false to use the hardcoded theme
+    theme: false,
 
     // the delimiter between the key and your search query
     // e.g. to search GitHub for potatoes you'd type "g:potatoes"
@@ -65,11 +66,10 @@
     pathDelimiter: '/',
 
     // the delimiter between the hours and minutes in the clock
-    clockDelimiter: '&nbsp;',
+    clockDelimiter: ' ',
 
-    // note: you can pass in your search query via the q query param
-    // e.g. going to file:///path/to/tilde/index.html?q=hamsters is equivalent
-    // to typing "hamsters" and pressing enter
+    // change clock to twelve hour format
+    twelveHour: false,
   };
 </script>
 
@@ -83,6 +83,11 @@
 <style type="text/css">
   @import url('https://fonts.googleapis.com/css?family=Lato:400,900');
 
+  :root {
+    --color0: #21252F;
+    --color15: #C4C9D2;
+  }
+
   body {
     position: absolute;
     top: 0;
@@ -91,10 +96,10 @@
     height: 100%;
     margin: 0;
     padding: 0;
-    transition: background .2s;
+    transition: background-color .2s;
+    background-color: var(--color0);
     font-family: Lato, sans-serif;
-    color: #ddd;
-    background-color: #111;
+    color: var(--color15);
   }
 
   input,
@@ -107,8 +112,8 @@
     margin: 0;
     border: 0;
     outline: 0;
-    background: transparent;
-    color: #fff;
+    background-color: transparent;
+    color: inherit;
     font-family: Lato, sans-serif;
     text-align: center;
     -webkit-appearance: none;
@@ -132,19 +137,25 @@
     display: block;
     margin-top: -.06em;
     font-size: 6rem;
+    text-align: center;
     letter-spacing: .05em;
     cursor: pointer;
   }
 
+  #am-pm {
+    font-size: .5em;
+  }
+
   #search-form {
     padding: 1em;
-    background: #111;
+    background-color: var(--color15);
     transition: background-color .5s;
+    color: var(--color0);
     box-sizing: border-box;
     z-index: 2;
   }
 
-  #search-form>div {
+  #search-form > div {
     width: 100%;
   }
 
@@ -176,8 +187,8 @@
   }
 
   .search-suggestion.highlight {
-    background-color: #fff;
-    color: #222;
+    background-color: var(--color0);
+    color: var(--color15);
   }
 
   .search-suggestion b {
@@ -188,12 +199,12 @@
   .search-suggestion b::after {
     content: ' ';
     position: absolute;
-    top: 51%;
     right: 0;
+    bottom: -.4em;
     left: 0;
     height: 3px;
-    background-color: #fff;
-    opacity: .8;
+    background-color: var(--color0);
+    opacity: .3;
   }
 
   .search-suggestion.highlight b::after {
@@ -203,7 +214,7 @@
   #help {
     display: block;
     padding: 8vw;
-    background: #111;
+    background-color: var(--color0);
     font-size: 1.3rem;
     z-index: 1;
   }
@@ -242,8 +253,8 @@
     width: 2.5em;
     margin-right: 1em;
     border-radius: 50%;
-    background-color: #ccc;
-    color: #222;
+    background-color: var(--color15);
+    color: var(--color0);
     font-size: .8em;
     text-align: center;
   }
@@ -262,7 +273,7 @@
     height: 2px;
     transition: .2s;
     transform: translateX(-2em);
-    background-color: #ddd;
+    background: var(--color15);
     opacity: 0;
   }
 
@@ -342,7 +353,7 @@
 
 <form class="overlay center" id="search-form" autocomplete="off" spellcheck="false">
   <div>
-    <input id="search-input" type="text">
+    <input id="search-input" type="text" title="search">
     <ul id="search-suggestions"></ul>
   </div>
 </form>
@@ -352,7 +363,6 @@
 <script>
   const $ = {
     bodyClassAdd: c => $.el('body').classList.add(c),
-    bodyClassHas: c => $.el('body').classList.contains(c),
     bodyClassRemove: c => $.el('body').classList.remove(c),
     el: s => document.querySelector(s),
     els: s => [].slice.call(document.querySelectorAll(s) || []),
@@ -389,6 +399,8 @@
         case 91: return 'super';
       }
     },
+
+    pad: v => ('0' + v.toString()).slice(-2),
   };
 
   class Clock {
@@ -396,24 +408,31 @@
       this._el = $.el('#clock');
       this._delimiter = options.delimiter;
       this._form = options.form;
+      this._twelveHour = options.twelveHour;
       this._setTime = this._setTime.bind(this);
-      this._registerEvents();
-      this._start();
-    }
-
-    _pad(num) {
-      return ('0' + num.toString()).slice(-2);
-    }
-
-    _registerEvents() {
       this._el.addEventListener('click', this._form.show);
+      this._start();
     }
 
     _setTime() {
       const date = new Date();
-      const hours = this._pad(date.getHours());
-      const minutes = this._pad(date.getMinutes());
-      this._el.innerHTML = hours + this._delimiter + minutes;
+      let hours = $.pad(date.getHours());
+      let amPm = '';
+
+      if (this._twelveHour) {
+        hours = date.getHours() > 12
+          ? date.getHours() - 12
+          : date.getHours() === 0
+            ? 12
+            : date.getHours();
+
+        amPm = `&nbsp;<span id="am-pm">` +
+          `${date.getHours() > 12 ? 'PM' : 'AM'}</span>`;
+      }
+
+      const minutes = $.pad(date.getMinutes());
+      this._el.innerHTML = `${hours}${this._delimiter}${minutes}${amPm}`;
+      this._el.setAttribute('datetime', date.toTimeString());
     }
 
     _start() {
@@ -428,18 +447,14 @@
       this._commands = options.commands;
       this._newTab = options.newTab;
       this._toggled = false;
+      this._handleKeydown = this._handleKeydown.bind(this);
       this._buildAndAppendLists();
-      this._bindMethods();
       this._registerEvents();
     }
 
     toggle(show) {
       this._toggled = (typeof show !== 'undefined') ? show : !this._toggled;
       this._toggled ? $.bodyClassAdd('help') : $.bodyClassRemove('help');
-    }
-
-    _bindMethods() {
-      this._handleKeydown = this._handleKeydown.bind(this);
     }
 
     _buildAndAppendLists() {
@@ -452,7 +467,7 @@
           `<li class="category">
             <h2 class="category-name">${category}</h2>
             <ul>${this._buildListCommands(category)}</ul>
-          </li>`
+          </li>`,
         );
       });
 
@@ -460,18 +475,20 @@
     }
 
     _buildListCommands(category) {
-      return this._commands.map(([cmdCategory, name, key, url]) => {
-        if (cmdCategory === category) {
-          return (
-            `<li class="command">
-              <a href="${url}" target="${this._newTab ? '_blank' : '_self'}">
-                <span class="command-key">${key}</span>
-                <span class="command-name">${name}</span>
-              </a>
-            </li>`
-          );
-        }
-      }).join('');
+      return this._commands
+        .map(([cmdCategory, name, key, url]) => {
+          if (cmdCategory === category) {
+            return (
+              `<li class="command">
+                <a href="${url}" target="${this._newTab ? '_blank' : '_self'}">
+                  <span class="command-key">${key}</span>
+                  <span class="command-name">${name}</span>
+                </a>
+              </li>`
+            );
+          }
+        })
+        .join('');
     }
 
     _getCategories() {
@@ -501,7 +518,7 @@
     getSuggestions() {}
 
     _addSearchPrefix(items, query) {
-      const searchPrefix = this._getSearchPrefix(query)
+      const searchPrefix = this._getSearchPrefix(query);
       return items.map(s => searchPrefix ? searchPrefix + s : s);
     }
 
@@ -545,7 +562,7 @@
         window[callback] = res => {
           const suggestions = res.map(i => i.phrase)
             .filter(s => !$.ieq(s, query))
-            .slice(0, this._limit)
+            .slice(0, this._limit);
 
           resolve(this._addSearchPrefix(suggestions, rawQuery));
         };
@@ -572,14 +589,19 @@
       });
 
       if (!exists) history.push([query, 1]);
-      this._setHistory(this._sort(history));
+
+      const sorted = history
+        .sort((current, next) => current[1] - next[1])
+        .reverse();
+
+      this._setHistory(sorted);
     }
 
     getSuggestions(query) {
       return new Promise(resolve => {
         const suggestions = this._getHistory()
           .map(([item]) => item)
-          .filter(item => this._itemContainsQuery(query, item))
+          .filter(item => query && !$.ieq(item, query) && $.iin(item, query))
           .slice(0, this._limit);
 
         resolve(suggestions);
@@ -595,10 +617,6 @@
       return this._history;
     }
 
-    _itemContainsQuery(query, item) {
-      return query && !$.ieq(item, query) && $.iin(item, query);
-    }
-
     _save(history) {
       localStorage.setItem(this._storeName, JSON.stringify(history));
     }
@@ -606,10 +624,6 @@
     _setHistory(history) {
       this._history = history;
       this._save(history);
-    }
-
-    _sort(history) {
-      return history.sort((current, next) => current[1] - next[1]).reverse();
     }
   }
 
@@ -619,7 +633,7 @@
       this._influencers = options.influencers;
       this._limit = options.limit;
       this._suggestionEls = [];
-      this._bindMethods();
+      this._handleKeydown = this._handleKeydown.bind(this);
       this._registerEvents();
     }
 
@@ -645,7 +659,7 @@
       if (input === '') this._clearSuggestions();
 
       Promise.all(this._getInfluencerPromises(input)).then(res => {
-        const suggestions = this._flattenAndUnique(res);
+        const suggestions = Suggester._flattenAndUnique(res);
         this._clearSuggestions();
 
         if (suggestions.length) {
@@ -656,8 +670,13 @@
       });
     }
 
+    // [[1, 2], [1, 2, 3, 4]] -> [1, 2, 3, 4]
+    static _flattenAndUnique(array) {
+      return [...new Set([].concat.apply([], array))];
+    }
+
     _appendSuggestions(suggestions, input) {
-      suggestions.some((suggestion, i) => {
+      for (const [i, suggestion] of suggestions.entries()) {
         const match = new RegExp($.escapeRegex(input), 'ig');
         const suggestionHtml = suggestion.replace(match, `<b>${input}</b>`);
 
@@ -672,17 +691,13 @@
             >
               ${suggestionHtml}
             </button>
-          </li>`
+          </li>`,
         );
 
-        return i + 1 >= this._limit;
-      });
+        if (i + 1 >= this._limit) break;
+      }
 
       this._suggestionEls = $.els('.js-search-suggestion');
-    }
-
-    _bindMethods() {
-      this._handleKeydown = this._handleKeydown.bind(this);
     }
 
     _clearClickEvents() {
@@ -697,11 +712,6 @@
       this._clearClickEvents();
       this._suggestionEls = [];
       this._el.innerHTML = '';
-    }
-
-    // [[1, 2], [1, 2, 3, 4]] -> [1, 2, 3, 4]
-    _flattenAndUnique(array) {
-      return [...new Set([].concat.apply([], array))];
     }
 
     _focusNext(e) {
@@ -751,12 +761,18 @@
     }
 
     _registerSuggestionEvents() {
-      this._suggestionEls.forEach(el => {
-        const value = el.getAttribute('data-suggestion');
-        el.addEventListener('mouseover', this._highlight.bind(this, el));
-        el.addEventListener('mouseout', this._unHighlight.bind(this));
-        el.addEventListener('click', this._onClick.bind(null, value));
-      });
+      const noHighlightUntilMouseMove = () => {
+        window.removeEventListener('mousemove', noHighlightUntilMouseMove);
+
+        this._suggestionEls.forEach(el => {
+          const value = el.getAttribute('data-suggestion');
+          el.addEventListener('mouseover', this._highlight.bind(this, el));
+          el.addEventListener('mouseout', this._unHighlight.bind(this));
+          el.addEventListener('click', this._onClick.bind(null, value));
+        });
+      };
+
+      window.addEventListener('mousemove', noHighlightUntilMouseMove);
     }
 
     _unHighlight(e) {
@@ -799,12 +815,12 @@
 
             if (res.isSearch && searchPath) {
               res.split = this._searchDelimiter;
-              res.query = this._shiftAndTrim(splitSearch, res.split);
-              res.redirect = this._prepSearch(url, searchPath, res.query);
+              res.query = QueryParser._shiftAndTrim(splitSearch, res.split);
+              res.redirect = QueryParser._prepSearch(url, searchPath, res.query);
             } else if (res.isPath) {
               res.split = this._pathDelimiter;
-              res.path = this._shiftAndTrim(splitPath, res.split);
-              res.redirect = this._prepPath(url, res.path);
+              res.path = QueryParser._shiftAndTrim(splitPath, res.split);
+              res.redirect = QueryParser._prepPath(url, res.path);
             } else {
               res.redirect = url;
             }
@@ -813,48 +829,41 @@
           }
 
           if (key === '*') {
-            res.redirect = this._prepSearch(url, searchPath, query);
+            res.redirect = QueryParser._prepSearch(url, searchPath, query);
           }
         });
       }
 
-      res.color = this._getColorFromUrl(res.redirect);
+      res.color = QueryParser._getColorFromUrl(this._commands, res.redirect);
       return res;
     }
 
-    _getColorFromUrl(url) {
-      const domain = this._getHostname(url);
-      const color = this._commands
-        .filter(c => this._getHostname(c[3]) === domain)
-        .map(c => c[5])[0];
+    static _getColorFromUrl(commands, url) {
+      const domain = new URL(url).hostname;
 
-      return color || null;
+      return commands
+        .filter(c => new URL(c[3]).hostname === domain)
+        .map(c => c[5])[0] || null;
     }
 
-    _getHostname(url) {
-      const parser = document.createElement('a');
-      parser.href = url;
-      return parser.hostname.replace(/^www./, '');
+    static _prepPath(url, path) {
+      return QueryParser._stripUrlPath(url) + '/' + path;
     }
 
-    _prepPath(url, path) {
-      return this._stripUrlPath(url) + '/' + path;
-    }
-
-    _prepSearch(url, searchPath, query) {
+    static _prepSearch(url, searchPath, query) {
       if (!searchPath) return url;
-      const baseUrl = this._stripUrlPath(url);
+      const baseUrl = QueryParser._stripUrlPath(url);
       const urlQuery = encodeURIComponent(query);
       searchPath = searchPath.replace('{}', urlQuery);
       return baseUrl + searchPath;
     }
 
-    _shiftAndTrim(arr, delimiter) {
+    static _shiftAndTrim(arr, delimiter) {
       arr.shift();
       return arr.join(delimiter).trim();
     }
 
-    _stripUrlPath(url) {
+    static _stripUrlPath(url) {
       const parser = document.createElement('a');
       parser.href = url;
       return `${parser.protocol}//${parser.hostname}`;
@@ -872,13 +881,18 @@
       this._instantRedirect = options.instantRedirect;
       this._newTab = options.newTab;
       this._inputElVal = '';
-      this._bindMethods();
+      this._clearPreview = this._clearPreview.bind(this);
+      this.show = this.show.bind(this);
+      this._handleInput = this._handleInput.bind(this);
+      this._handleKeydown = this._handleKeydown.bind(this);
+      this._previewValue = this._previewValue.bind(this);
+      this._submitForm = this._submitForm.bind(this);
       this._registerEvents();
       this._loadQueryParam();
     }
 
     hide() {
-      $.bodyClassRemove('form')
+      $.bodyClassRemove('form');
       this._inputEl.value = '';
       this._inputElVal = '';
     }
@@ -886,17 +900,6 @@
     show() {
       $.bodyClassAdd('form');
       this._inputEl.focus();
-    }
-
-    _bindMethods() {
-      this.hide = this.hide.bind(this);
-      this.show = this.show.bind(this);
-      this._clearPreview = this._clearPreview.bind(this);
-      this._handleKeydown = this._handleKeydown.bind(this);
-      this._handleInput = this._handleInput.bind(this);
-      this._previewValue = this._previewValue.bind(this);
-      this._submitForm = this._submitForm.bind(this);
-      this._submitWithValue = this._submitWithValue.bind(this);
     }
 
     _clearPreview() {
@@ -912,8 +915,11 @@
         case 'ctrl':
         case 'enter':
         case 'shift':
-        case 'super': return;
-        case 'escape': this.hide(); return;
+        case 'super':
+          return;
+        case 'escape':
+          this.hide();
+          return;
       }
 
       this.show();
@@ -1030,7 +1036,16 @@
   };
 
   new Clock({
+    twelveHour: CONFIG.twelveHour,
     delimiter: CONFIG.clockDelimiter,
     form: getForm(),
   });
+
+  if (CONFIG.theme) {
+    const link = document.createElement('link');
+    link.href = CONFIG.theme;
+    link.type = 'text/css';
+    link.rel = 'stylesheet';
+    $.el('head').appendChild(link);
+  }
 </script>
